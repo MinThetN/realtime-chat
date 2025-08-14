@@ -11,8 +11,11 @@ const ChatList = () => {
           <Search />
           <input type="text" placeholder="Search Users" />
         </div>
-        <Plus />
+        <div className="add">
+          <Plus />
+        </div>
         
+
       </div>
     </div>
   )
