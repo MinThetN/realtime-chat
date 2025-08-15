@@ -37,7 +37,59 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="center"></div>
+      <div className="center">
+        <div className="message own">
+          <div className="texts">
+            <p>Hello</p>
+            <span> 1 min ago </span>
+          </div>
+          
+        </div>
+
+        <div className="message">
+          <img src="./images/avatar.jpg" alt="" />
+          <div className="texts">
+            <p>Hello</p>
+            <span> 1 min ago </span>
+          </div>
+        </div>
+
+        <div className="message own">
+          <div className="texts">
+            <img src="https://static.wixstatic.com/media/e437ed_a4f5959ca0b14e688070a227c30308f5~mv2.png/v1/fill/w_534,h_534,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/e437ed_a4f5959ca0b14e688070a227c30308f5~mv2.png" alt="" />
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit nobis doloribus dolore? 
+              Ipsa ad magnam ipsum, ab eum perferendis harum omnis illo unde in, odio placeat, autem illum 
+              nesciunt nulla.</p>
+            <span> 1 min ago </span>
+          </div>
+        </div>
+
+        <div className="message">
+          <img src="./images/avatar.jpg" alt="" />
+          <div className="texts">
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum est mollitia neque rem illo 
+              minus. Dicta illo sit necessitatibus et ipsum fugiat quos magnam eius maiores excepturi. Odit, 
+              ducimus accusantium.</p>
+            <span> 1 min ago </span>
+          </div>
+        </div>
+
+        <div className="message own">
+          <div className="texts">
+            <p>Hello</p>
+            <span> 1 min ago </span>
+          </div>
+        </div>
+
+        <div className="message">
+          <img src="./images/avatar.jpg" alt="" />
+          <div className="texts">
+            <p>Hello</p>
+            <span> 1 min ago </span>
+          </div>
+        </div>
+
+      </div>
 
       <div className="bottom">
         <div className="icons">
