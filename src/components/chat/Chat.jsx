@@ -7,12 +7,18 @@ import { Camera } from 'lucide-react';
 import { Mic } from 'lucide-react';
 import { ImagePlus } from 'lucide-react';
 import EmojiPicker from "emoji-picker-react";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 
 const Chat = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [text, setText] = useState("");
+
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [text]); // Add text as dependency to trigger scroll when new messages are sent
 
   const handleEmoji = e => {
     setText((prev) => prev + e.emoji);
@@ -89,6 +95,8 @@ const Chat = () => {
           </div>
         </div>
 
+        {/* Add this line to fix auto-scroll */}
+        <div ref={endRef}></div>
       </div>
 
       <div className="bottom">
@@ -108,7 +116,7 @@ const Chat = () => {
             <EmojiPicker open={showEmojiPicker} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="sendButton">Send</button>
+        <button className="sendButton" onClick={() => setText("")}>Send</button>
       </div>
 
     </div>
