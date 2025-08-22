@@ -28,7 +28,7 @@
         padding: 20px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
 
         /* Custom scrollbar styling for info section */
         &::-webkit-scrollbar {
@@ -120,6 +120,14 @@
 
             &:hover {
                 background-color: #ff3742;
+            }
+
+            &.logout {
+                background-color: rgb(6, 141, 203);
+
+                &:hover {
+                    background-color: rgb(3, 109, 167);
+                }
             }
         }
     }
