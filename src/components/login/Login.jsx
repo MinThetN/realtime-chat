@@ -17,11 +17,15 @@ const Login = () => {
         }
     }
 
+    const handleLogin = e => {
+        e.preventDefault()
+    }
+
   return <div className="login">
 
     <div className="item">
         <h2>Welcome</h2>
-        <form>
+        <form onSubmit={handleLogin}>
             <input type="text" placeholder="Email" name="email" />
             <input type="password" placeholder="Password" name="password" />
             <button type="submit">Sign In</button>

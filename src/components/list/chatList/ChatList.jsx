@@ -2,6 +2,7 @@ import "./chatList.css"
 import { Search } from 'lucide-react';
 import { Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
+import AddUser from './addUser/addUser';
 
 const ChatList = () => {
   const [addMode, setAddMode] = useState(false)
@@ -101,6 +102,7 @@ const ChatList = () => {
             <p>Hello</p>
           </div>
         </div>
+        {addMode && <AddUser />}
       </div>
     </div>
   )

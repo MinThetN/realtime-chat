@@ -1,0 +1,77 @@
+.addUser {
+    width: max-content;
+    height: max-content;
+    padding: 30px;
+    background-color: rgba(17, 25, 40, 0.9);
+    border-radius: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+
+    form {
+        display: flex;
+        gap: 20px;
+
+        input {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            padding: 20px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background-color: #1a73e8;
+            color: white;
+            cursor: pointer;
+        }
+    }
+
+    .user {
+        margin-top: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%; /* Ensure full width */
+
+        .detail {
+            display: flex !important; /* Force flex display */
+            align-items: center;
+            gap: 20px;
+            flex-direction: row; /* Explicitly set row direction */
+            flex-wrap: nowrap; /* Prevent wrapping */
+
+            img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                flex-shrink: 0; /* Prevent image from shrinking */
+                display: block; /* Ensure image displays properly */
+            }
+
+            span {
+                margin: 0;
+                color: white;
+                display: inline-block;
+                white-space: nowrap; 
+            }
+        }
+
+        button {
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background-color: #1a73e8;
+            color: white;
+            cursor: pointer;
+            flex-shrink: 0; /* Prevent button from shrinking */
+        }
+    }
+}
