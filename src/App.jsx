@@ -14,7 +14,7 @@ const App = () => {
   // check if user is logged in
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
-      fetchUserInfo(user.uid)
+      fetchUserInfo(user?.uid) // logout user
     });
 
     return () => {

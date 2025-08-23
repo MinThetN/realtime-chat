@@ -2,13 +2,17 @@ import "./userinfo.css"
 import { CircleEllipsis } from 'lucide-react';
 import { Video } from 'lucide-react';
 import { SquarePen } from 'lucide-react';
+import { useUserStore } from "../../../lib/userStore";
 
 const Userinfo = () => {
+
+  const {currentUser} = useUserStore()
+
   return (
     <div className='userinfo'>
       <div className="user">
-        <img src='./images/avatar.jpg' alt="" />
-        <h3>User Name</h3>
+        <img src={currentUser.avatar || "./images/avatar.jpg"} alt="" />
+        <h4>{currentUser.username}</h4>
       </div>
 
       <div className="icons">

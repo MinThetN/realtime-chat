@@ -1,6 +1,7 @@
 import "./detail.css"
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Download } from 'lucide-react';
+import { auth } from "../../lib/firebase";
 
 const detail = () => {
   return (
@@ -68,7 +69,7 @@ const detail = () => {
           </div>
         </div>
         <button>Block User</button>
-        <button className="logout">Log Out</button>
+        <button className="logout" onClick={() => auth.signOut()}>Log Out</button>
 
       </div>
     </div>
