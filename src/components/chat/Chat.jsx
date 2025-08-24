@@ -8,11 +8,19 @@ import { Mic } from 'lucide-react';
 import { ImagePlus } from 'lucide-react';
 import EmojiPicker from "emoji-picker-react";
 import { useEffect, useState, useRef } from "react";
+import { arrayUnion, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+import { useUserStore } from "../../lib/userStore";
 
 
 const Chat = () => {
+  const [chat, setChat] = useState()
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [text, setText] = useState("");
+
+  const {chatId, user} = useChatStore()
+  const {currentUser} = useUserStore()
 
   const endRef = useRef(null);
 
@@ -20,9 +28,61 @@ const Chat = () => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [text]); // Add text as dependency to trigger scroll when new messages are sent
 
+  useEffect(() => {
+    const unSub = onSnapshot (doc(db, "chats", chatId ), (res) => {
+      setChat(res.data())
+    } )
+    return () => {
+      unSub()
+    }
+  }, [chatId]);
+
+  console.log(chat)
+
+
   const handleEmoji = e => {
     setText((prev) => prev + e.emoji);
     setShowEmojiPicker(false)
+  }
+
+  const handleSend = async () => {
+    if (!text === "") return;
+
+    try {
+      await updateDoc(doc(db, "chats", chatId), {
+        messages: arrayUnion({
+          senderId: currentUser.id,
+          text,
+          createdAt: new Date(),
+        })
+      });
+
+      const userIDs = [currentUser.id, user.id]
+
+      userIDs.forEach( async (id) => {
+
+        const userChatRef = doc(db, "userchats", id)
+        const userChatsSnapShot = await getDoc(userChatRef)
+
+        if (userChatsSnapShot.exists()) {
+          const userChatsData = userChatsSnapShot.data()
+
+          const chatIndex = userChatsData.chats.findIndex(c=> c.chatId === chatId)
+
+          userChatsData.chats[chatIndex].lastMessage = text
+          userChatsData.chats[chatIndex].isSeen = id === currentUser.id ? true: false
+          userChatsData.chats[chatIndex].updatedAt = Date.now()
+
+          await updateDoc(userChatRef, {
+            chats: userChatsData.chats,
+          })
+        }
+
+      })
+
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -44,56 +104,17 @@ const Chat = () => {
       </div>
 
       <div className="center">
-        <div className="message own">
-          <div className="texts">
-            <p>Hello</p>
-            <span> 1 min ago </span>
-          </div>
-          
-        </div>
 
-        <div className="message">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <p>Hello</p>
-            <span> 1 min ago </span>
+        { chat?.messages?.map((message) => (
+          <div className="message own" key={message?.createdAt}>
+            <div className="texts">
+              {message.img && <img src={message.img} alt="" />}
+              <p>{message.text}</p>
+              {/* <span> {message} </span> */}
+            </div>
           </div>
-        </div>
-
-        <div className="message own">
-          <div className="texts">
-            <img src="https://static.wixstatic.com/media/e437ed_a4f5959ca0b14e688070a227c30308f5~mv2.png/v1/fill/w_534,h_534,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/e437ed_a4f5959ca0b14e688070a227c30308f5~mv2.png" alt="" />
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit nobis doloribus dolore? 
-              Ipsa ad magnam ipsum, ab eum perferendis harum omnis illo unde in, odio placeat, autem illum 
-              nesciunt nulla.</p>
-            <span> 1 min ago </span>
-          </div>
-        </div>
-
-        <div className="message">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nostrum est mollitia neque rem illo 
-              minus. Dicta illo sit necessitatibus et ipsum fugiat quos magnam eius maiores excepturi. Odit, 
-              ducimus accusantium.</p>
-            <span> 1 min ago </span>
-          </div>
-        </div>
-
-        <div className="message own">
-          <div className="texts">
-            <p>Hello</p>
-            <span> 1 min ago </span>
-          </div>
-        </div>
-
-        <div className="message">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <p>Hello</p>
-            <span> 1 min ago </span>
-          </div>
-        </div>
+        ))}
+        
 
         {/* Add this line to fix auto-scroll */}
         <div ref={endRef}></div>
@@ -116,7 +137,7 @@ const Chat = () => {
             <EmojiPicker open={showEmojiPicker} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="sendButton" onClick={() => setText("")}>Send</button>
+        <button className="sendButton" onClick={handleSend}>Send</button>
       </div>
 
     </div>

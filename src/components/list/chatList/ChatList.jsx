@@ -3,15 +3,17 @@ import { Search } from 'lucide-react';
 import { Plus, Minus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddUser from './addUser/AddUser';
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useUserStore } from "../../../lib/userStore";
+import { useChatStore } from "../../../lib/chatStore";
 
 const ChatList = () => {
   const [chats, setChats] = useState([])
   const [addMode, setAddMode] = useState(false)
 
   const {currentUser} = useUserStore()
+  const {chatId, changeChat} = useChatStore()
 
   useEffect(() => {
     const unSub = onSnapshot(doc(db, "userchats", currentUser.id), async (res) => {
@@ -37,6 +39,34 @@ const ChatList = () => {
 
   console.log(chats)
 
+  const handleSelect = async (chat) => {
+    
+    const userChats = chats.map(item => {
+      const { user, ...rest } = item;
+      return rest;
+    });
+
+    const chatIndex = userChats.findIndex(item => item.chatId === chat.chatId);
+
+    userChats[chatIndex].isSeen = true
+
+    const userChatRef = doc(db, "userchats", currentUser.id);
+
+    try {
+      
+      await updateDoc(userChatRef, {
+        chats: userChats,
+      })
+      changeChat(chat.chatId, chat.user)
+
+    } catch (error) {
+      console.log(error)
+    }
+
+    
+
+  }
+
   return (
     <div className="chatList">
       <div className="search">
@@ -54,7 +84,14 @@ const ChatList = () => {
 
       {/* Chat items container */}
       {chats.map((chat) => (
-          <div className="item" key={chat.chatId}>
+          <div 
+          className="item" 
+          key={chat.chatId} 
+          onClick={() => handleSelect(chat)}
+          style={{
+            backgroundColor: chat?.isSeen ? 'transparent' : '#116db8',
+          }}
+          >
             <img src={chat.user.avatar || "./images/avatar.jpg"} alt="" />
             <div className="texts">
               <h4>{chat.user.username}</h4>
