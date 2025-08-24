@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword , signInWithEmailAndPassword } from "fir
 import { auth, db } from "../../lib/firebase"
 import { doc, setDoc } from "firebase/firestore"
 import upload from "../../lib/upload"
+import { useUserStore } from "../../lib/userStore";
 
 const Login = () => {
 
@@ -14,6 +15,7 @@ const Login = () => {
     })
 
     const [loading, setLoading] = useState(false)
+    const { fetchUserInfo } = useUserStore()
 
     const handleAvatar = e => {
         if(e.target.files[0]){
@@ -43,6 +45,8 @@ const Login = () => {
                 id: res.user.uid,
                 blocked: [],
             });
+            // Manually fetch user info to update the store immediately
+            await fetchUserInfo(res.user.uid)
 
             await setDoc(doc(db, "userchats", res.user.uid),{
                 chats: [],
@@ -67,12 +71,11 @@ const Login = () => {
         const { email, password } = Object.fromEntries(formData)
 
         try {
-
             await signInWithEmailAndPassword(auth, email, password)
-
             toast.success("Logged in successfully")
         } catch (error) {
             console.log(error.message)
+            toast.error(error.message)
         } finally {
             setLoading(false)
         }
@@ -84,7 +87,7 @@ const Login = () => {
     <div className="item">
         <h2>Welcome</h2>
         <form onSubmit={handleLogin}>
-            <input type="text" placeholder="Email" name="email" />
+            <input type="email" placeholder="Email" name="email" />
             <input type="password" placeholder="Password" name="password" />
             <button type="submit" disabled={loading}>{ loading ? "Loading" : "Sign In"}</button>
         </form>

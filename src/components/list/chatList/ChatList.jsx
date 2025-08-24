@@ -2,8 +2,8 @@ import "./chatList.css"
 import { Search } from 'lucide-react';
 import { Plus, Minus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import AddUser from './addUser/addUser';
-import { doc, onSnapshot } from "firebase/firestore";
+import AddUser from './addUser/AddUser';
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { useUserStore } from "../../../lib/userStore";
 
@@ -14,8 +14,20 @@ const ChatList = () => {
   const {currentUser} = useUserStore()
 
   useEffect(() => {
-    const unSub = onSnapshot(doc(db, "userchats", currentUser.id), (doc) => {
-      setChats(doc.data())
+    const unSub = onSnapshot(doc(db, "userchats", currentUser.id), async (res) => {
+      const items = res.data().chats; // Fixed: added ()
+
+      const promises = items.map( async (item) => {
+        const UserDocRef = doc(db, "users", item.receiverId);
+        const UserDocSnap = await getDoc(UserDocRef);
+
+        const user = UserDocSnap.data()
+
+        return {...item, user}
+      })
+
+      const chatData = await Promise.all(promises)
+      setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt)) // Fixed: updatedAt
     });
 
     return () => {
@@ -41,88 +53,17 @@ const ChatList = () => {
       </div>
 
       {/* Chat items container */}
-      <div className="chatItems">
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
+      {chats.map((chat) => (
+          <div className="item" key={chat.chatId}>
+            <img src={chat.user.avatar || "./images/avatar.jpg"} alt="" />
+            <div className="texts">
+              <h4>{chat.user.username}</h4>
+              <p>{chat.lastMessage || "No messages yet"}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
-
-        <div className="item">
-          <img src="./images/avatar.jpg" alt="" />
-          <div className="texts">
-            <h4>User Name</h4>
-            <p>Hello</p>
-          </div>
-        </div>
+        ))}
         {addMode && <AddUser />}
-      </div>
+
     </div>
   )
 }
