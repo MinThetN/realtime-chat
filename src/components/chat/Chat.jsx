@@ -12,12 +12,17 @@ import { arrayUnion, doc, getDoc, onSnapshot, updateDoc } from "firebase/firesto
 import { db } from "../../lib/firebase";
 import { useChatStore } from "../../lib/chatStore";
 import { useUserStore } from "../../lib/userStore";
+import upload from "../../lib/upload";
 
 
 const Chat = () => {
   const [chat, setChat] = useState()
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [text, setText] = useState("");
+  const [ img, setImg ] = useState({
+  file: null,
+  url: "",
+  })
 
   const {chatId, user} = useChatStore()
   const {currentUser} = useUserStore()
@@ -45,60 +50,109 @@ const Chat = () => {
     setShowEmojiPicker(false)
   }
 
+  const handleImg = e => {
+        if(e.target.files[0]){
+            setImg({
+                file:e.target.files[0],
+                url: URL.createObjectURL(e.target.files[0])
+            })
+        }
+    }
+
   const handleSend = async () => {
-    if (!text === "") return;
+    if (text === "" && !img.file) return;
 
     try {
-      await updateDoc(doc(db, "chats", chatId), {
-        messages: arrayUnion({
-          senderId: currentUser.id,
-          text,
-          createdAt: new Date(),
-        })
-      });
-
-      const userIDs = [currentUser.id, user.id]
-
-      userIDs.forEach( async (id) => {
-
-        const userChatRef = doc(db, "userchats", id)
-        const userChatsSnapShot = await getDoc(userChatRef)
-
-        if (userChatsSnapShot.exists()) {
-          const userChatsData = userChatsSnapShot.data()
-
-          const chatIndex = userChatsData.chats.findIndex(c=> c.chatId === chatId)
-
-          userChatsData.chats[chatIndex].lastMessage = text
-          userChatsData.chats[chatIndex].isSeen = id === currentUser.id ? true: false
-          userChatsData.chats[chatIndex].updatedAt = Date.now()
-
-          await updateDoc(userChatRef, {
-            chats: userChatsData.chats,
+      // Send image first if exists
+      if (img.file) {
+        const imgUrl = await upload(img.file);
+        
+        await updateDoc(doc(db, "chats", chatId), {
+          messages: arrayUnion({
+            senderId: currentUser.id,
+            text: "", // Empty text for image-only message
+            createdAt: new Date(),
+            img: imgUrl
           })
-        }
-
-      })
-
+        });
+      
+        // Update user chats for image
+        const userIDs = [currentUser.id, user.id];
+        userIDs.forEach(async (id) => {
+          const userChatRef = doc(db, "userchats", id);
+          const userChatsSnapShot = await getDoc(userChatRef);
+      
+          if (userChatsSnapShot.exists()) {
+            const userChatsData = userChatsSnapShot.data();
+            const chatIndex = userChatsData.chats.findIndex(c => c.chatId === chatId);
+            
+            userChatsData.chats[chatIndex].lastMessage = "📷 Image";
+            userChatsData.chats[chatIndex].isSeen = id === currentUser.id ? true : false;
+            userChatsData.chats[chatIndex].updatedAt = Date.now();
+      
+            await updateDoc(userChatRef, {
+              chats: userChatsData.chats,
+            });
+          }
+        });
+      }
+    
+      // Send text separately if exists
+      if (text !== "") {
+        await updateDoc(doc(db, "chats", chatId), {
+          messages: arrayUnion({
+            senderId: currentUser.id,
+            text,
+            createdAt: new Date()
+            // No image property for text-only message
+          })
+        });
+    
+        // Update user chats for text
+        const userIDs = [currentUser.id, user.id];
+        userIDs.forEach(async (id) => {
+          const userChatRef = doc(db, "userchats", id);
+          const userChatsSnapShot = await getDoc(userChatRef);
+    
+          if (userChatsSnapShot.exists()) {
+            const userChatsData = userChatsSnapShot.data();
+            const chatIndex = userChatsData.chats.findIndex(c => c.chatId === chatId);
+            
+            userChatsData.chats[chatIndex].lastMessage = text;
+            userChatsData.chats[chatIndex].isSeen = id === currentUser.id ? true : false;
+            userChatsData.chats[chatIndex].updatedAt = Date.now();
+    
+            await updateDoc(userChatRef, {
+              chats: userChatsData.chats,
+            });
+          }
+        });
+      }
+    
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+    
+    // Clear both image and text after sending
+    setImg({
+      file: null,
+      url: "",
+    });
+    setText("");
+  };
 
   return (
     <div className="chat">
       
       <div className="top">
         <div className="user">
-          <img src="./images/avatar.jpg" alt="" />
+          <img src={user?.avatar || "./images/avatar.jpg"} alt="" />
           <div className="texts">
-            <span>User Name</span>
-            <p>my name is minthetnaung</p>
+            <span>{user?.username}</span>
+            <p>{user?.email}</p>
           </div>
         </div>
         <div className="icons">
-          {/* <Phone />
-          <Video /> */}
           <Info size={20} />
         </div>
       </div>
@@ -106,7 +160,7 @@ const Chat = () => {
       <div className="center">
 
         { chat?.messages?.map((message) => (
-          <div className="message own" key={message?.createdAt}>
+          <div className={message.senderId === currentUser?.id ? "message own" : "message"} key={message?.createdAt}>
             <div className="texts">
               {message.img && <img src={message.img} alt="" />}
               <p>{message.text}</p>
@@ -114,7 +168,15 @@ const Chat = () => {
             </div>
           </div>
         ))}
-        
+        {
+          img.url && (
+            <div className="message own">
+              <div className="texts">
+                <img src={img.url} alt="" />
+              </div>
+            </div>
+          )
+        }
 
         {/* Add this line to fix auto-scroll */}
         <div ref={endRef}></div>
@@ -122,7 +184,10 @@ const Chat = () => {
 
       <div className="bottom">
         <div className="icons">
-          <ImagePlus size={20} />
+          <label htmlFor="file">
+            <ImagePlus size={20} />
+          </label>
+          <input type="file" id="file" style={{display: "none"}} onChange={handleImg} />
           <Camera size={20} />
           <Mic size={20} />
         </div>
@@ -130,7 +195,8 @@ const Chat = () => {
         type="text" 
         placeholder="Type a message" 
         value={text}
-        onChange={(e) => setText(e.target.value)} />
+        onChange={(e) => setText(e.target.value)}
+        />
         <div className="emoji" >
           <SmilePlus size={20} onClick={() => setShowEmojiPicker ((prev) => !prev)}/>
           <div className="picker">

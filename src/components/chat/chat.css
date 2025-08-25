@@ -74,24 +74,79 @@
                 background-color: #01adf781;
             }
 
+            /* Preview message styling */
+            &.preview {
+                background-color: #4a4a4a;
+                border: 2px dashed #666;
+                opacity: 0.8;
+            }
+
             img {
                 width: 30px;
                 height: 30px;
                 object-fit: cover;
                 border-radius: 50%;
             }
+            
             .texts{
                 flex: 1;
                 display: flex;
                 flex-direction: column;
                 gap: 5px;
 
+                /* Image in message */
                 img{
                     width: 100%;
-                    height: 300px;
+                    max-width: 300px;
+                    height: auto;
+                    max-height: 300px;
                     object-fit: cover;
                     border-radius: 10px;
+                    margin-bottom: 5px;
                 }
+
+                /* Text in message */
+                p {
+                    margin: 0;
+                    word-wrap: break-word;
+                    line-height: 1.4;
+                }
+
+                /* Send image button for preview */
+                .send-image-btn {
+                    background-color: #5183fe;
+                    color: white;
+                    padding: 6px 12px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    margin-top: 5px;
+                    align-self: flex-start;
+                    transition: background-color 0.2s;
+                }
+
+                .send-image-btn:hover {
+                    background-color: #4169e1;
+                }
+            }
+
+            /* Image-only message styling */
+            &.image-only .texts {
+                padding: 5px;
+            }
+
+            &.image-only .texts img {
+                margin-bottom: 0;
+            }
+
+            /* Text-only message styling */
+            &.text-only {
+                padding: 12px 15px;
+            }
+
+            &.text-only .texts p {
+                margin: 0;
             }
         }
     }
@@ -124,6 +179,11 @@
             padding: 12px;
             border-radius: 25px;
             font-size: 14px;
+
+            &:disabled {
+                background-color: #6a709187;
+                cursor: not-allowed;
+            }
         }
 
         .emoji {
@@ -142,8 +202,19 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:hover {
+                background-color: #4169e1;
+            }
+
+            &:disabled {
+                background-color: #6a709187;
+                cursor: not-allowed;
+            }
         }
 
+        
     }
 }
     

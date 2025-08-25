@@ -11,9 +11,10 @@ import { useChatStore } from "../../../lib/chatStore";
 const ChatList = () => {
   const [chats, setChats] = useState([])
   const [addMode, setAddMode] = useState(false)
+  const [ input, setInput ] = useState("")
 
   const {currentUser} = useUserStore()
-  const {chatId, changeChat} = useChatStore()
+  const {changeChat} = useChatStore()
 
   useEffect(() => {
     const unSub = onSnapshot(doc(db, "userchats", currentUser.id), async (res) => {
@@ -42,7 +43,7 @@ const ChatList = () => {
   const handleSelect = async (chat) => {
     
     const userChats = chats.map(item => {
-      const { user, ...rest } = item;
+      const {...rest } = item;
       return rest;
     });
 
@@ -63,16 +64,18 @@ const ChatList = () => {
       console.log(error)
     }
 
-    
-
   }
+
+  const filteredChats = chats.filter((c) => 
+    c.user.username.toLowerCase().includes(input.toLowerCase())
+);
 
   return (
     <div className="chatList">
       <div className="search">
         <div className="searchBar">
           <Search />
-          <input type="text" placeholder="Search Users" />
+          <input type="text" placeholder="Search Users" onChange={(e) => setInput(e.target.value)} />
         </div>
         <div 
           className={`add ${addMode ? 'active' : ''}`}
@@ -83,7 +86,7 @@ const ChatList = () => {
       </div>
 
       {/* Chat items container */}
-      {chats.map((chat) => (
+      {filteredChats.map((chat) => (
           <div 
           className="item" 
           key={chat.chatId} 

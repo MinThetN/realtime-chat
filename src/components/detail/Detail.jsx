@@ -2,14 +2,18 @@ import "./detail.css"
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Download } from 'lucide-react';
 import { auth } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
 
-const detail = () => {
+const Detail = () => {
+
+  const { user } = useChatStore()
+
   return (
     <div className="detail">
       <div className="user">
-        <img src="./images/avatar.jpg" alt="" />
-        <h2>User Name</h2>
-        <p>my name is minthetnaung</p>
+        <img src={user?.avatar || "./images/avatar.jpg"} alt="" />
+        <h2>{user?.username}</h2>
+        <p>{user?.email}</p>
       </div>
 
       <div className="info">
@@ -68,7 +72,7 @@ const detail = () => {
             <ArrowUp className="icon" size={18}/>
           </div>
         </div>
-        <button>Block User</button>
+        
         <button className="logout" onClick={() => auth.signOut()}>Log Out</button>
 
       </div>
@@ -76,4 +80,4 @@ const detail = () => {
   )
 }
 
-export default detail
+export default Detail
