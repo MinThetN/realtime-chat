@@ -18,7 +18,7 @@ const ChatList = () => {
 
   useEffect(() => {
     const unSub = onSnapshot(doc(db, "userchats", currentUser.id), async (res) => {
-      const items = res.data().chats; // Fixed: added ()
+      const items = res.data().chats;
 
       const promises = items.map( async (item) => {
         const UserDocRef = doc(db, "users", item.receiverId);
@@ -30,7 +30,7 @@ const ChatList = () => {
       })
 
       const chatData = await Promise.all(promises)
-      setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt)) // Fixed: updatedAt
+      setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt))
     });
 
     return () => {
@@ -70,6 +70,11 @@ const ChatList = () => {
     c.user.username.toLowerCase().includes(input.toLowerCase())
 );
 
+  // Function to close add user modal
+  const handleCloseAddUser = () => {
+    setAddMode(false);
+  };
+
   return (
     <div className="chatList">
       <div className="search">
@@ -102,7 +107,7 @@ const ChatList = () => {
             </div>
           </div>
         ))}
-        {addMode && <AddUser />}
+        {addMode && <AddUser onClose={handleCloseAddUser} existingChats={chats} />}
 
     </div>
   )
